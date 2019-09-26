@@ -11,20 +11,19 @@ var axios = require("axios");
 
 if (process.argv[2] === 'movie-this') {
     let movieName = process.argv.slice(3).join(" ");
-    var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
-    console.log(queryUrl);
-    axios.get(queryUrl)
+    var urlOMBD = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
+    axios.get(urlOMBD)
         .then(function (response) {
-            m = response.data;
+            movie = response.data;
             console.log(`
-Title: ${m.Title}
-Year released: ${m.Year}
-IMDB Rating: ${m.Ratings[0].Value} 
-Rotten Tomatoes Rating: ${m.Ratings[1].Value}  
-Released in: ${m.Country}
-Offered in: ${m.Language}
-Plot summary: ${m.Plot}
-Actors: ${m.Actors}
+${movie.Title}
+Released in ${movie.Year}
+IMDB rated it ${movie.Ratings[0].Value} 
+Rotten Tomatoes gave it a ${movie.Ratings[1].Value}  
+Released in ${movie.Country}
+Offered in ${movie.Language}
+Plot summary: ${movie.Plot}
+Actors: ${movie.Actors}
             `);
         })
         .catch(function (error) {
@@ -34,4 +33,24 @@ Actors: ${m.Actors}
 
 if (process.argv[2] === 'concert-this') {
 
+    let artist = process.argv.slice(3).join(" ");
+    var urlBIT = `https://rest.bandsintown.com/artists/${artist}/events/?app_id=codingbootcamp`;
+    console.log(urlBIT);
+    axios.get(urlBIT)
+        .then(function (response) {
+            for (let i = 0; i < response.data.length; i++) {
+                event = response.data[i];
+                console.log(`
+CONCERT ${i+1}
+Name of Venue: ${event.venue.name}
+Location: ${event.venue.city}, ${event.venue.country}
+Date: ${event.datetime}
+
+-----------------------------------------------------
+                `);
+            }
+        })
+        .catch(function (error) {
+            console.log(error)
+        });
 }
