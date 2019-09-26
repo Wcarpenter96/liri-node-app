@@ -1,15 +1,17 @@
 // TODO:
-
+// ---------------
 // do-what-it-says
 
 require("dotenv").config();
+
+var fs = require('fs');
 var keys = require("./keys.js");
 var axios = require("axios");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
 if (process.argv[2] === 'movie-this') {
-    
+
     let movieName = process.argv.slice(3).join(" ");
     var urlOMBD = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
     axios.get(urlOMBD)
@@ -55,8 +57,8 @@ Date: ${event.datetime}
         });
 }
 
-if (process.argv[2] === 'spotify-this-song') {   
-    
+if (process.argv[2] === 'spotify-this-song') {
+
     let songTitle = process.argv.slice(3).join(" ");
     spotify
         .search({ type: 'track', query: songTitle })
@@ -75,4 +77,18 @@ if (process.argv[2] === 'spotify-this-song') {
         .catch(function (err) {
             console.log(err);
         });
+}
+
+if (process.argv[2] === 'do-what-it-says') {
+
+    fs.readFile("random.txt", "utf8", function (err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        var dataArr = data.split(",");
+        console.log(dataArr);
+        if (dataArr[0] === 'spotify-this-song'){
+            console.log('Spotify');
+        }
+    });
 }
