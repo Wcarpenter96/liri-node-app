@@ -1,15 +1,15 @@
 // TODO:
 
-// concert-this
-// spotify-this-song
 // do-what-it-says
 
 require("dotenv").config();
 var keys = require("./keys.js");
-// var spotify = new Spotify(keys.spotify);
 var axios = require("axios");
+var Spotify = require("node-spotify-api");
+var spotify = new Spotify(keys.spotify);
 
 if (process.argv[2] === 'movie-this') {
+    
     let movieName = process.argv.slice(3).join(" ");
     var urlOMBD = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
     axios.get(urlOMBD)
@@ -26,8 +26,8 @@ Plot summary: ${movie.Plot}
 Actors: ${movie.Actors}
             `);
         })
-        .catch(function (error) {
-            console.log(error)
+        .catch(function (err) {
+            console.log(err)
         });
 }
 
@@ -41,7 +41,7 @@ if (process.argv[2] === 'concert-this') {
             for (let i = 0; i < response.data.length; i++) {
                 event = response.data[i];
                 console.log(`
-CONCERT ${i+1}
+CONCERT ${i + 1}
 Name of Venue: ${event.venue.name}
 Location: ${event.venue.city}, ${event.venue.country}
 Date: ${event.datetime}
@@ -50,7 +50,29 @@ Date: ${event.datetime}
                 `);
             }
         })
-        .catch(function (error) {
-            console.log(error)
+        .catch(function (err) {
+            console.log(err)
+        });
+}
+
+if (process.argv[2] === 'spotify-this-song') {   
+    
+    let songTitle = process.argv.slice(3).join(" ");
+    spotify
+        .search({ type: 'track', query: songTitle })
+        .then(function (response) {
+            song = response.tracks.items[0];
+            console.log(``);
+            console.log(song.name)
+            for (let i = 0; i < song.artists.length; i++) {
+                if (i === 0) console.log(`by ${song.artists[i].name}`);
+                else console.log(`and ${song.artists[i].name}`);
+            }
+            console.log(`from ${song.album.name}`)
+            console.log(`Preview: ${song.external_urls.spotify}
+            `)
+        })
+        .catch(function (err) {
+            console.log(err);
         });
 }
