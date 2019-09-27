@@ -7,7 +7,6 @@ var moment = require("moment");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
-// Runs logic for movie-this command
 function movieThis(movieName) {
     var urlOMBD = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
     axios.get(urlOMBD)
@@ -22,7 +21,23 @@ Released in ${movie.Country}
 Offered in ${movie.Language}
 Plot summary: ${movie.Plot}
 Actors: ${movie.Actors}
+
+-----------------------------------------------------
         `);
+            fs.appendFile('log.txt', `
+${movie.Title}
+Released in ${movie.Year}
+IMDB rated it ${movie.Ratings[0].Value} 
+Rotten Tomatoes gave it a ${movie.Ratings[1].Value}  
+Released in ${movie.Country}
+Offered in ${movie.Language}
+Plot summary: ${movie.Plot}
+Actors: ${movie.Actors}
+
+-----------------------------------------------------
+        `, function (err) {
+                if (err) return console.log(err);
+            });
         })
         .catch(function (err) {
             console.log(err)
@@ -45,6 +60,16 @@ Date: ${moment(event.datetime).format('MM/DD/YYYY')}
 
 -----------------------------------------------------
             `);
+                fs.appendFile('log.txt', `
+CONCERT ${i + 1}
+Name of Venue: ${event.venue.name}
+Location: ${event.venue.city}, ${event.venue.country}
+Date: ${moment(event.datetime).format('MM/DD/YYYY')}
+            
+-----------------------------------------------------
+            `, function (err) {
+                    if (err) return console.log(err);
+                });
             }
         })
         .catch(function (err) {
@@ -58,15 +83,29 @@ function spotifyThisSong(songTitle) {
         .search({ type: 'track', query: songTitle })
         .then(function (response) {
             song = response.tracks.items[0];
-            console.log(``);
-            console.log(song.name)
+            let artists = '';
             for (let i = 0; i < song.artists.length; i++) {
-                if (i === 0) console.log(`by ${song.artists[i].name}`);
-                else console.log(`and ${song.artists[i].name}`);
+                if (i === 0) artists += song.artists[0].name;
+                else artists += ` and ${song.artists[i].name}`;
             }
-            console.log(`from ${song.album.name}`)
-            console.log(`Preview: ${song.external_urls.spotify}
+            console.log(`
+${song.name}
+by ${artists}
+from ${song.album.name}
+Preview: ${song.external_urls.spotify}
+
+-----------------------------------------------------
         `)
+            fs.appendFile('log.txt', `
+${song.name}
+by ${artists}
+from ${song.album.name}
+Preview: ${song.external_urls.spotify}
+
+-----------------------------------------------------
+        `, function (err) {
+                if (err) return console.log(err);
+            });
         })
         .catch(function (err) {
             console.log(err);
@@ -78,7 +117,7 @@ inquirer.prompt([
         type: "list",
         name: "choice",
         message: "What would you like liri to do?",
-        choices: ['movie-this', 'concert-this', 'spotify-this-song', 'do-what-it-says'],
+        choices: ['movie-this', 'concert-this', 'spotify-this-song', 'do-what-it-says', 'clear-log'],
     }
 ]).then(function (response) {
 
@@ -97,7 +136,7 @@ inquirer.prompt([
 
         case 'concert-this':
             inquirer.prompt([
-                {   
+                {
                     name: "name",
                     message: "Enter the name of an artist!",
                     default: "Jacob Collier"
@@ -112,7 +151,7 @@ inquirer.prompt([
                 {
                     name: "name",
                     message: "Enter the name of a song!",
-                    default:"The Sign, Ace of Base"
+                    default: "The Sign, Ace of Base"
                 }
             ]).then(function (song) {
                 spotifyThisSong(song.name);
@@ -131,6 +170,12 @@ inquirer.prompt([
                     spotifyThisSong(dataArr[1]);
                 } else
                     console.log(`Cannot read file!`);
+            });
+            break;
+        case 'clear-log':
+            fs.writeFile('log.txt', '', function (err) {
+                if (err) return console.log(err);
+                console.log('log.txt successfully cleared');
             });
             break;
     }
