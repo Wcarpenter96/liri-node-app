@@ -116,7 +116,7 @@ inquirer.prompt([
     {
         type: "list",
         name: "choice",
-        message: "What would you like liri to do?",
+        message: "What would you like Liri to do?",
         choices: ['movie-this', 'concert-this', 'spotify-this-song', 'do-what-it-says', 'clear-log'],
     }
 ]).then(function (response) {
