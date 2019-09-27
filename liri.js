@@ -1,18 +1,14 @@
-// TODO:
-// ---------------
-// do-what-it-says
-
 require("dotenv").config();
-
 var fs = require('fs');
 var keys = require("./keys.js");
 var axios = require("axios");
+var inquirer = require("inquirer");
+var moment = require("moment");
 var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
-if (process.argv[2] === 'movie-this') {
-
-    let movieName = process.argv.slice(3).join(" ");
+// Runs logic for movie-this command
+function movieThis(movieName) {
     var urlOMBD = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
     axios.get(urlOMBD)
         .then(function (response) {
@@ -26,16 +22,15 @@ Released in ${movie.Country}
 Offered in ${movie.Language}
 Plot summary: ${movie.Plot}
 Actors: ${movie.Actors}
-            `);
+        `);
         })
         .catch(function (err) {
             console.log(err)
         });
 }
 
-if (process.argv[2] === 'concert-this') {
-
-    let artist = process.argv.slice(3).join(" ");
+// Runs logic for concert-this command
+function concertThis(artist) {
     var urlBIT = `https://rest.bandsintown.com/artists/${artist}/events/?app_id=codingbootcamp`;
     console.log(urlBIT);
     axios.get(urlBIT)
@@ -46,10 +41,10 @@ if (process.argv[2] === 'concert-this') {
 CONCERT ${i + 1}
 Name of Venue: ${event.venue.name}
 Location: ${event.venue.city}, ${event.venue.country}
-Date: ${event.datetime}
+Date: ${moment(event.datetime).format('MM/DD/YYYY')}
 
 -----------------------------------------------------
-                `);
+            `);
             }
         })
         .catch(function (err) {
@@ -57,9 +52,8 @@ Date: ${event.datetime}
         });
 }
 
-if (process.argv[2] === 'spotify-this-song') {
-
-    let songTitle = process.argv.slice(3).join(" ");
+// Runs logic for spotify-this-song command
+function spotifyThisSong(songTitle) {
     spotify
         .search({ type: 'track', query: songTitle })
         .then(function (response) {
@@ -72,23 +66,72 @@ if (process.argv[2] === 'spotify-this-song') {
             }
             console.log(`from ${song.album.name}`)
             console.log(`Preview: ${song.external_urls.spotify}
-            `)
+        `)
         })
         .catch(function (err) {
             console.log(err);
         });
 }
+// Prompts user to select a Liri command
+inquirer.prompt([
+    {
+        type: "list",
+        name: "choice",
+        message: "What would you like liri to do?",
+        choices: ['movie-this', 'concert-this', 'spotify-this-song', 'do-what-it-says'],
+    }
+]).then(function (response) {
 
-if (process.argv[2] === 'do-what-it-says') {
+    switch (response.choice) {
+        case 'movie-this':
+            inquirer.prompt([
+                {
+                    name: "name",
+                    message: "Enter the name of a movie!",
+                    default: "Mr. Nobody"
+                }
+            ]).then(function (movie) {
+                movieThis(movie.name);
+            });
+            break;
 
-    fs.readFile("random.txt", "utf8", function (err, data) {
-        if (err) {
-            return console.log(err);
-        }
-        var dataArr = data.split(",");
-        console.log(dataArr);
-        if (dataArr[0] === 'spotify-this-song'){
-            console.log('Spotify');
-        }
-    });
-}
+        case 'concert-this':
+            inquirer.prompt([
+                {   
+                    name: "name",
+                    message: "Enter the name of an artist!",
+                    default: "Jacob Collier"
+                }
+            ]).then(function (artist) {
+                concertThis(artist.name);
+            });
+            break;
+
+        case 'spotify-this-song':
+            inquirer.prompt([
+                {
+                    name: "name",
+                    message: "Enter the name of a song!",
+                    default:"The Sign, Ace of Base"
+                }
+            ]).then(function (song) {
+                spotifyThisSong(song.name);
+            });
+            break;
+
+        case 'do-what-it-says':
+            fs.readFile("random.txt", "utf8", function (err, data) {
+                if (err) return console.log(err);
+                var dataArr = data.split(",");
+                if (dataArr[0] === 'movie-this') {
+                    movieThis(dataArr[1]);
+                } else if (dataArr[0] === 'concert-this') {
+                    concertThis(dataArr[1]);
+                } else if (dataArr[0] === 'spotify-this-song') {
+                    spotifyThisSong(dataArr[1]);
+                } else
+                    console.log(`Cannot read file!`);
+            });
+            break;
+    }
+});
