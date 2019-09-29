@@ -46,7 +46,7 @@ Actors: ${movie.Actors}
 
 // Runs logic for concert-this command
 function concertThis(artist) {
-    var urlBIT = `https://rest.bandsintown.com/artists/${artist}/events/?app_id=codingbootcamp`;
+    var urlBIT = `https://rest.bandsintown.com/artists/${artist}/events/?app_id=anyplaceholderwilldo`;
     console.log(urlBIT);
     axios.get(urlBIT)
         .then(function (response) {
